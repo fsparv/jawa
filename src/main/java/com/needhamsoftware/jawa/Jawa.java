@@ -59,7 +59,7 @@ public class Jawa {
     for (EntryAction onEntryAction : onEntryActions) {
       onEntryAction.onEntry(root);
     }
-    Field[] fields = root.getClass().getFields();
+    Field[] fields = allFields(root.getClass());
     for (Field field : fields) {
       try {
         if (!shouldTraverse(field.getType())) {
@@ -83,6 +83,19 @@ public class Jawa {
     for (ExitAction onExitAction: onExitActions) {
       onExitAction.onExit(root);
     }
+  }
+
+  public Field[] allFields(Class clazz) {
+    Field[] declaredFields = clazz.getDeclaredFields();
+    List<Field> accessibleFields = new ArrayList<>();
+    for (Field declaredField : declaredFields) {
+      declaredField.setAccessible(true);
+      accessibleFields.add(declaredField);
+    }
+    if (clazz.getSuperclass() != Object.class) {
+      accessibleFields.addAll(Arrays.asList(allFields(clazz.getSuperclass())));
+    }
+    return accessibleFields.toArray(new Field[declaredFields.length]);
   }
 
   @SuppressWarnings("unchecked")
